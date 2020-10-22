@@ -1,0 +1,33 @@
+1.confirm 机制
+本质： 生产端向Broker发送消息, 如果Broker接收到消息则会给生产端一个应答，
+发生时间： 生产端找不到交换机
+
+实现
+1. 开启confirm机制
+spring.rabbitmq.publisher-confirm-type=correlated
+
+2. 设置回调函数
+/**
+ *  当ack为false则表示消息发送失败
+ *  ack为fasle的可能情况
+ *  1. 找不到交换机， 2. rabbitmq宕机
+ */
+rabbitTemplate.setConfirmCallBack((correlated, ack, cause) -> {
+	
+	
+})
+
+2. return 机制
+本质： 与confirm类似， 但只有在交换机找不到队列时会调用
+发生时间： 交换机找不到队列
+
+实现
+1.开启return机制
+spring.rabbitmq.publisher-returns=true
+spring.rabbitmq.template.mandatory=true
+
+2. 设置回调函数
+rabbitTemplate.setReturnCallback((message, replyCode, replyText, exchange, routingKey) -> {
+	System.out.println(message + "            111111111111111111111");
+});
+

@@ -1,0 +1,21 @@
+生产者发布消息到交换机
+交换机将消息发布到虚拟队列上
+消费者从虚拟队列上获取消息
+
+1. 生产者生成消息
+//交换机名称， 队列名称 “”即可， 发布的消息
+@Test	
+public void fanout() {
+        rabbitTemplate.convertAndSend("logs", "", "fanout---test");
+}
+
+2. 消费者消费消息
+    @RabbitListener(bindings = {@QueueBinding(value = @Queue, exchange = @Exchange(value = "logs", type = "fanout"))})
+    public void fanout1(String message) {
+        System.out.println("fanout1-------" + message);
+    }
+
+    @RabbitListener(bindings = {@QueueBinding(value = @Queue, exchange = @Exchange(value = "logs", type = "fanout"))})
+    public void fanout2(String message) {
+        System.out.println("fanout2-------" + message);
+    }

@@ -1,0 +1,21 @@
+基于direct上增加通配符适配
+key的规则
+“#” 匹配一个词或多个词，
+“*”只匹配一个词。
+两个单词之间用.隔开
+
+1. 生产者生产消息
+@Test
+public void topic() {
+        rabbitTemplate.convertAndSend("topic", "user.info", "direct---test");
+}
+
+2.消费者消费消息
+@RabbitListener(bindings = {@QueueBinding(value = @Queue,
+            exchange = @Exchange(value = "topic", type = "topic"),
+            key = {"user.*"})})
+public void topic(String message) {
+        System.out.println("topic-------" + message);
+}
+
+注意 匹配规则只能发生在消费端， 即  如果生产端写了 user.* ,  * 会被当成一个*符号， 而不是一个通配符

@@ -1,0 +1,39 @@
+结合 ttl和死信队列实现
+
+如 设置消息 ttl到队列中， 不进行消费， 到达指定时间则会把消息投递到死信队列中
+
+存在问题
+	rabbitmq只会检查第一个消息的消息，然后在检查第二个，
+	如果第一个消息很晚才过期， 会导致第二个消息虽然过期了，但投递不到死信队列中
+	
+解决方法
+	rabbitmq 下载插件
+	https://www.rabbitmq.com/community-plugins.html ，下载rabbitmq_delayed_message_exchange插件，然后解压放置到RabbitMQ的插件目录。
+	进入RabbitMQ的安装目录下的sbin目录，执行下面命令让该插件生效，然后重启RabbitMQ
+	rabbitmq-plugins enable rabbitmq_delayed_message_exchange
+	
+	本质
+	生成一个类型为 x-delayed-message 的 交换机， 该交换机会根据 delay 时间来发放消息
+	
+	使用
+	1. 定义延迟队列
+		@Bean
+		public Queue delayedQueue() {
+			return QueueBuilder.durable(RabbitMqConfigName.delayedQueue).autoDelete().build();
+		}
+	
+	2. 定义延迟交换机
+		@Bean
+		public CustomExchange delayedExchange() {
+			HashMap<String, Object> args = new HashMap<>();
+			args.put("x-delayed-type", "direct");
+			return new CustomExchange(RabbitMqConfigName.delayedExchange, "x-delayed-message", true, true, args);
+		}
+		
+	3. 发送消息
+		 rabbitTemplate.convertAndSend(RabbitMqConfigName.delayedExchange, "", id, (message) -> {
+            MessageProperties messageProperties = message.getMessageProperties();
+            messageProperties.setDelay(new Integer(timeout));
+            return message;
+        });
+	

@@ -1,0 +1,24 @@
+在发布订阅模型的基础上，增加bingkey机制，消息会被发布到具有相同bindkey的队列中
+1. 生产者生产消息
+@Test
+ public void direct() {
+        rabbitTemplate.convertAndSend("direct", "error", "direct---test");
+}
+
+
+2. 消费者消费消息
+@RabbitListener(bindings = {@QueueBinding(value = @Queue,
+            exchange = @Exchange(value = "direct", type = "direct"),
+            key = {"error", "info"})})
+public void direct1(String message) {
+        System.out.println("fanout1-------" + message);
+}
+
+@RabbitListener(bindings = {@QueueBinding(value = @Queue,
+            exchange = @Exchange(value = "direct", type = "direct"),
+            key = {"info"})})
+public void direct2(String message) {
+}
+
+ps: 
+只有key为error的方法能接收到消息

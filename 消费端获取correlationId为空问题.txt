@@ -1,0 +1,23 @@
+将correaltionId存放到properties中
+MessagePostProcessor messagePostProcessor = new MessagePostProcessor() {
+	@Override
+	public Message postProcessMessage(Message message) throws AmqpException {
+		return message;
+	}
+
+	@Override
+	public Message postProcessMessage(Message message, Correlation correlation) {
+		MessageProperties messageProperties = message.getMessageProperties();
+		if (correlation instanceof CorrelationData)
+			messageProperties.setCorrelationId(((CorrelationData) correlation).getId());
+		return message;
+	}
+};
+
+
+rabbitTemplate.convertAndSend(StandardName.customeExchange, "", message, messagePostProcessor, correlationData);
+
+
+
+或者直接
+ messageProperties.getHeader(PublisherCallbackChannel.RETURNED_MESSAGE_CORRELATION_KEY);

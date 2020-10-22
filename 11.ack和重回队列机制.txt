@@ -1,0 +1,26 @@
+ack机制
+	本质： 消费端消费消息后反馈给rabbitmq， rabbitmq接收到反馈后才将消息删除
+
+自动ack(默认)
+	消费端完全消费消息后若未抛出异常，则向rabbitmq反馈信息
+	存在问题：
+		1. 程序出现异常，我们一般要进行捕获，可一旦捕获异常，rabbitmq便会删除消息
+		2. 程序出现异常后，消息仍处于rabbitmq队列头，下一个消费的仍然是这条旧消息，会造成消息堵塞
+	
+	解决方法
+		1. 开启手动ack
+		2. 开启重试次数(一般在开启手动ack后，开启重试次数便无效了， 需要自己指定)
+	
+		
+手动ack
+	需要手动向rabbitmq反馈信息
+	开启方法
+		spring.rabbitmq.listener.simple.acknowledge-mode=manual
+		spring.rabbitmq.listener.direct.acknowledge-mode=manual
+	
+	手动反馈信息
+		反馈成功
+			channel.basicAck(messageProperties.getDeliveryTag(), false);
+		反馈失败
+			channel.basicNack(messageProperties.getDeliveryTag(), false, true);
+		ps: basicNack(消息标签, 是否进行批量处理, 是否返回队列)

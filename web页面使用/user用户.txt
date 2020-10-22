@@ -1,0 +1,3 @@
+user 
+	All users 
+		canaccess virtual hosts 表示 可访问的虚拟主机

@@ -1,0 +1,42 @@
+1. 作用
+	当消息不可被消费时, 会将消息重定向到死信队列
+
+2. 消息不可被消费情况
+	a. 消息过期
+	b. 消费者拒收消息
+	c. 队列满了
+	
+3. 创建死信
+	a. 创建死信队列
+	@Bean("queue_DLX")
+    public Queue queue_DLX() {
+        return QueueBuilder.durable(RabbitAttr.queue_DLX).withArgument("x-message-ttl", 3000).build();
+    }
+	
+	b. 创建死信交换机
+	@Bean("exchange_DLX")
+    public Exchange exchange_DLX() {
+        return ExchangeBuilder.fanoutExchange(RabbitAttr.exchange_DLX).build();
+    }
+	
+	c. 绑定队列和交换机
+	   @Bean
+    public Binding binding1(@Qualifier("queue_DLX") Queue queue1, @Qualifier("exchange_DLX")Exchange exchange) {
+        return BindingBuilder.bind(queue1).to(exchange).with("").noargs();
+    }
+	
+	d.声明队列消息投递的死信交换机
+	@Bean("queue1")
+    public Queue queue1() {
+        return QueueBuilder.durable(RabbitAttr.queue1)
+                .withArgument("x-message-ttl", 3000)
+                .withArgument("x-dead-letter-exchange", RabbitAttr.exchange_DLX) //死信交换机名称
+                .withArgument("x-dead-letter-routing-key", "") //死信队列的路由key
+                .build();
+    }
+	
+4. 其他
+	死信交换机本质上就是一个普通的交换机
+	重要代码
+	.withArgument("x-dead-letter-exchange", RabbitAttr.exchange_DLX) //死信交换机名称
+	.withArgument("x-dead-letter-routing-key", "") //死信队列的路由key

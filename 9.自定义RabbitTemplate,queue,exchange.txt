@@ -1,0 +1,56 @@
+1. 编写配置类 RabbitConfig
+@Configuration
+public class RabbitConfig{
+}
+
+2. 注入 CachingConnectionFactory
+@Configuration
+public class RabbitConfig{
+	@Autowired
+	CachingConnectionFactory cachingConnectionFactory;
+}
+
+3. 编写自定义RabbitTemplate
+@Value("${spring.rabbitmq.template.mandatory}")
+private boolean mandatory;
+
+@Bean
+public RabbitTemplate rabbitTemplage() {
+	RabbitTemplate rabbitTemplage = new RabbitTemplate(cachingConnectionFactory);
+	// rabbitTemplage其他设置, 如 设置回调函数等
+	// 
+	// 注意return回调函数函数需要设置
+	rabbitTemplate.setMandatory(true);
+	
+	
+	return rabbitTemplage;
+}
+
+2.自定义队列
+	@Bean("directQueue")
+	public Queue directQueue() {
+		return QueueBuilder.durable("DIRECT_QUEUE").withArgument("x-message-ttl", 3000).build();
+	}
+	
+3. 自定义交换机
+	@Bean("directExchange")
+    public Exchange directExchange() {
+        return ExchangeBuilder.directExchange("DIRECT_EXCHANGE").durable(true).build();
+    }
+	
+4. 交换机和队列绑定
+	@Bean
+    public Binding binding(@Qualifier("queue1") Queue queue, @Qualifier("exchange") Exchange exchange) {
+        return BindingBuilder.bind(queue).to(exchange).with("key").noargs();
+    }
+
+5.使用
+	@RabbitListener(queues = {"DIRECT_QUEUE"})
+	public void testTTL(String message) {
+		System.out.println(message);
+	}
+
+注意 @RabbitListener(bindings = @QueueBinding(value = @Queue, exchange = @Exchange(value = "hello", type = ExchangeTypes.FANOUT)))
+本质上还是创建了队列 不过该队列会自动删除而已
+
+

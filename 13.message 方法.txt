@@ -1,0 +1,6 @@
+byte[] getBody()  获取消息体, 返回字节数组
+MessageProperties getMessageProperties() 获取消息属性
+
+messageProperties.getHeaders().get(PublisherCallbackChannel.RETURNED_MESSAGE_CORRELATION_KEY)
+messageProperties.getCorrelationId()  获取correlationId
+
